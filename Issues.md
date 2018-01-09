@@ -3,7 +3,10 @@ sudo apt-get install --reinstall ca-certificates
 hnz2szh@SGHZ001012257:~$ sudo add-apt-repository ppa:deadsnakes/ppa
 Cannot add PPA: 'ppa:deadsnakes/ppa'.
 Please check that the PPA name or format is correct.
+# add GPG public key
+sudo -E apt-key adv --keyserver keyserver.ubuntu.com --recv-keys F76221572C52609D
 
+*-E specify use sys-env due to proxy issue*
 # add ppa
 You need to export your proxy environment variables using
 
@@ -185,5 +188,33 @@ Copyright (c) 2005-2016 NVIDIA Corporation
 Built on Tue_Jan_10_13:22:03_CST_2017
 Cuda compilation tools, release 8.0, V8.0.61
 ```
+# Docker
 
+```bash
+Collecting Flask (from -r requirements.txt (line 1))
+  Retrying (Retry(total=4, connect=None, read=None, redirect=None)) after connection broken by 'ProxyError('Cannot connect to proxy.', NewConnectionError('<pip._vendor.requests.packages.urllib3.connection.VerifiedHTTPSConnection object at 0x7fb5a0821f50>: Failed to establish a new connection: [Errno 111] Connection refused',))': /simple/flask/
+```
+## Root Cause
+Cntlm on the host machine listen to port localhost:3128, but if docker proxy configured as localhost, container will not bridge this request to the host localhost,  when try to connetct to localhost it will faile. 
+
+## Solution 
+1. Change the cntlm to listen to other ports,  but this has met probably DNS issue? 
+
+2. Configure cntlm listen to additional port. 
+- enable cntlm to gateway mode
+- set Listen interface
+- set Allow rule for remote connections
+
+cntlm.conf example below:
+# This is the docker0 gateway address, listen on request forwarded by the docker gateway
+Listen          172.17.0.1:3128
+...
+Gateway yes
+#allow the remote connections inside the docker container
+Allow           172.17.0.0/16
+
+- Set docker proxy in Dockerfile
+# Set proxy server 
+ENV http_proxy http://172.17.0.1:3128/
+ENV https_proxy https://172.17.0.1:3128/
 

@@ -7,6 +7,8 @@ check Graphic Card HW
 #Check GPU driver 
 cat /proc/driver/nvidia/version
 
+#Check GPU load 1s fresh
+nvidia-smi -l 1
 #Command line output to file
 
 cmd &> xxx.txt
@@ -43,3 +45,15 @@ Ubuntu 15.04 (using Systemd by default):
 # Docker
 check pulled images
 >docker images
+
+bad <none><none> images http://www.projectatomic.io/blog/2015/07/what-are-docker-none-none-images/
+stop and remove all docker containers
+>docker stop $(docker ps -a -q)
+>docker rm $(docker ps -a -q)
+
+remove all dangling images, [ref](https://stackoverflow.com/questions/33907835/docker-error-cannot-delete-docker-container-conflict-unable-to-remove-reposito)
+
+>docker rmi $(docker images -f "dangling=true" -q)
+
+#MxNet
+
