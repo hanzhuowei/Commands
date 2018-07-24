@@ -1,3 +1,10 @@
+# Linux Useful Commands
+### List 5 latest modified files
+```
+ls -1t | head -5
+```
+
+# Check GPU info
 lspci -vnn | grep VGA -A 12
 
 lshw -numeric -C display
